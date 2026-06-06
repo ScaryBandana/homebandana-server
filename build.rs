@@ -29,7 +29,7 @@ fn main() {
 }
 
 // Hard-fails the build if no valid Git commit hash can be determined.
-// This ensures that errors related to Git information get visible in CI, so that we don`t accidentally ship builds without Git metadata.
+// This ensures that errors related to Git metadata get visible in CI, so that we don`t accidentally ship builds without Git metadata.
 fn get_git_short_commit_hash() -> String {
     let output = Command::new("git")
         .args(["rev-parse", "--short", "HEAD"])
@@ -56,7 +56,7 @@ fn get_git_short_commit_hash() -> String {
 }
 
 // Hard-fails the build if no valid Git branch name can be determined.
-// This ensures that errors related to Git information get visible in CI, so that we don`t accidentally ship builds without Git metadata.
+// This ensures that errors related to Git metadata get visible in CI, so that we don`t accidentally ship builds without Git metadata.
 fn get_git_branch_name() -> String {
     let output = Command::new("git")
         .args(["rev-parse", "--abbrev-ref", "HEAD"])
