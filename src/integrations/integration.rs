@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod integrations;
+use async_trait::async_trait;
+use uuid::Uuid;
 
-#[tokio::main]
-async fn main() {
-    let pkg_name = env!("CARGO_PKG_NAME");
-    let pkg_version = env!("CARGO_PKG_VERSION");
-    let git_commit = env!("GIT_COMMIT");
-    let git_branch = env!("GIT_BRANCH");
+use crate::integrations::integration_error::IntegrationError;
 
-    println!("{pkg_name} {pkg_version}-{git_commit}({git_branch})");
+#[async_trait]
+pub trait Integration: Send + Sync {
+    fn uuid(&self) -> Uuid;
+
+    async fn start(&self) -> Result<(), IntegrationError>;
+    async fn stop(&self) -> Result<(), IntegrationError>;
 }

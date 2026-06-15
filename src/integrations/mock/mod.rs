@@ -12,14 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod integrations;
-
-#[tokio::main]
-async fn main() {
-    let pkg_name = env!("CARGO_PKG_NAME");
-    let pkg_version = env!("CARGO_PKG_VERSION");
-    let git_commit = env!("GIT_COMMIT");
-    let git_branch = env!("GIT_BRANCH");
-
-    println!("{pkg_name} {pkg_version}-{git_commit}({git_branch})");
-}
+pub mod mock_integration;
+pub mod mock_integration_error;
