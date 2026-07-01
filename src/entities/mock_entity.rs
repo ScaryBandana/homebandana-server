@@ -12,15 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-mod entities;
-mod integrations;
+use uuid::Uuid;
 
-#[tokio::main]
-async fn main() {
-    let pkg_name = env!("CARGO_PKG_NAME");
-    let pkg_version = env!("CARGO_PKG_VERSION");
-    let git_commit = env!("GIT_COMMIT");
-    let git_branch = env!("GIT_BRANCH");
+use crate::entities::entity::Entity;
 
-    println!("{pkg_name} {pkg_version}-{git_commit}({git_branch})");
+pub struct MockEntity {
+    uuid: Uuid,
+    name: String,
+}
+
+impl MockEntity {
+    #[rustfmt::skip]
+    pub fn new(uuid: Uuid, name: String) -> Self {
+        Self {
+            uuid,
+            name
+        }
+    }
+}
+
+impl Entity for MockEntity {
+    fn uuid(&self) -> Uuid {
+        self.uuid
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
 }
