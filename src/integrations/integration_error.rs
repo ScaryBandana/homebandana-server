@@ -14,10 +14,14 @@
 
 use thiserror::Error;
 
-use crate::integrations::mock::mock_integration_error::MockIntegrationError;
+use crate::integrations::{
+    mock::mock_integration_error::MockIntegrationError, philips_hue::philips_hue_error::PhilipsHueError,
+};
 
 #[derive(Debug, Error)]
 pub enum IntegrationError {
     #[error(transparent)]
     MockIntegrationError(#[from] MockIntegrationError),
+    #[error(transparent)]
+    PhilipsHueError(#[from] PhilipsHueError),
 }
