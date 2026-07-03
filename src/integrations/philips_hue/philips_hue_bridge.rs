@@ -12,13 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use thiserror::Error;
+use serde::Deserialize;
 
-#[derive(Debug, Error)]
-pub enum PhilipsHueError {
-    #[error("No Hue bridges discovered")]
-    NoBridgesDiscovered,
-
-    #[error("HTTP request failed: {0}")]
-    HttpRequestFailed(#[from] reqwest::Error),
+#[derive(Debug, Deserialize)]
+pub struct PhilipsHueBridge {
+    pub id: String,
+    #[serde(rename = "internalipaddress")]
+    pub internal_ip_address: String,
+    pub port: u16,
 }

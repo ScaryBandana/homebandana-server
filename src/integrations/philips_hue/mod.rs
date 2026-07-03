@@ -13,6 +13,9 @@
 // limitations under the License.
 
 pub mod philips_hue_error;
+// Allow dead code warnings until we use the Philips Hue bridge, to make clippy happy.
+#[allow(dead_code)]
+mod philips_hue_bridge;
 // Allow dead code warnings until we use the Philips Hue integration, to make clippy happy.
 #[allow(dead_code)]
 mod philips_hue_integration;
