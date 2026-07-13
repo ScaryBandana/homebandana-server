@@ -168,4 +168,48 @@ mod tests {
         assert!(result.is_err());
         assert!(matches!(result.unwrap_err(), PhilipsHueError::NoBridgesDiscovered));
     }
+
+    #[tokio::test]
+    async fn test_discover_http_error_fails() {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(GET).path("/");
+            then.status(500);
+        });
+
+        let integration = {
+            let uuid = Uuid::new_v4();
+
+            PhilipsHueIntegration::new(uuid)
+        };
+
+        let result = integration.discover_bridges(&server.base_url()).await;
+        mock.assert();
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(_)));
+    }
+
+    #[tokio::test]
+    async fn test_discover_invalid_json_fails() {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(GET).path("/");
+            then.status(200)
+                .header("Content-Type", "application/json")
+                .body("invalid json");
+        });
+
+        let integration = {
+            let uuid = Uuid::new_v4();
+
+            PhilipsHueIntegration::new(uuid)
+        };
+
+        let result = integration.discover_bridges(&server.base_url()).await;
+        mock.assert();
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(_)));
+    }
 }
