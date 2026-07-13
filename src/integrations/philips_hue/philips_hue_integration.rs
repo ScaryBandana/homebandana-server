@@ -170,7 +170,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_discover_http_error_fails() {
+    async fn test_discover_bridges_http_error_fails() {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
@@ -191,7 +191,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_discover_invalid_json_fails() {
+    async fn test_discover_bridges_invalid_json_fails() {
         let server = MockServer::start();
 
         let mock = server.mock(|when, then| {
