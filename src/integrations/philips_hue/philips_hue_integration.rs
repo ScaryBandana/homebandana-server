@@ -34,7 +34,11 @@ impl PhilipsHueIntegration {
     }
 
     async fn discover_bridges(&self, url: &str) -> Result<Vec<PhilipsHueBridge>, PhilipsHueError> {
-        let bridges = reqwest::get(url).await?.json::<Vec<PhilipsHueBridge>>().await?;
+        let bridges = reqwest::get(url)
+            .await?
+            .error_for_status()?
+            .json::<Vec<PhilipsHueBridge>>()
+            .await?;
 
         match bridges.is_empty() {
             true => Err(PhilipsHueError::NoBridgesDiscovered),
@@ -187,7 +191,7 @@ mod tests {
         let result = integration.discover_bridges(&server.base_url()).await;
         mock.assert();
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(_)));
+        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(error) if error.is_status()));
     }
 
     #[tokio::test]
@@ -210,6 +214,6 @@ mod tests {
         let result = integration.discover_bridges(&server.base_url()).await;
         mock.assert();
         assert!(result.is_err());
-        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(_)));
+        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(error) if error.is_decode()));
     }
 }
