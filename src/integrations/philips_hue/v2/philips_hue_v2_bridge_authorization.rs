@@ -12,19 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use thiserror::Error;
+use serde::Deserialize;
 
-#[derive(Debug, Error)]
-pub enum PhilipsHueError {
-    #[error("No Hue bridges discovered")]
-    NoBridgesDiscovered,
-    #[error("Bridge linking timed out")]
-    BridgeLinkingTimeout,
-    #[error("Bridge linking failed: {0}")]
-    BridgeLinkingFailed(String),
-    #[error("Unexpected response from bridge: {0}")]
-    UnexpectedResponse(String),
+#[derive(Deserialize)]
+pub struct PhilipsHueV2BridgeAuthorizationResponse {
+    pub error: Option<PhilipsHueV2BridgeAuthorizationErrorResponse>,
+    pub success: Option<PhilipsHueV2BridgeAuthorizationSuccessResponse>,
+}
 
-    #[error("HTTP request failed: {0}")]
-    HttpRequestFailed(#[from] reqwest::Error),
+#[derive(Deserialize)]
+pub struct PhilipsHueV2BridgeAuthorizationErrorResponse {
+    #[serde(rename = "type")]
+    pub kind: u32,
+    pub address: String,
+    pub description: String,
+}
+
+#[derive(Deserialize)]
+pub struct PhilipsHueV2BridgeAuthorizationSuccessResponse {
+    pub username: String,
 }

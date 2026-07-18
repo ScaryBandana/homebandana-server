@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Philips Hue API V2 models.
+mod v2;
+
 pub mod philips_hue_error;
 // Allow dead code warnings until we use the Philips Hue bridge, to make clippy happy.
 #[allow(dead_code)]

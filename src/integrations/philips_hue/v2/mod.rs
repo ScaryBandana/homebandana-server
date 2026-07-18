@@ -12,19 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum PhilipsHueError {
-    #[error("No Hue bridges discovered")]
-    NoBridgesDiscovered,
-    #[error("Bridge linking timed out")]
-    BridgeLinkingTimeout,
-    #[error("Bridge linking failed: {0}")]
-    BridgeLinkingFailed(String),
-    #[error("Unexpected response from bridge: {0}")]
-    UnexpectedResponse(String),
-
-    #[error("HTTP request failed: {0}")]
-    HttpRequestFailed(#[from] reqwest::Error),
-}
+pub mod philips_hue_v2_bridge_authorization;
