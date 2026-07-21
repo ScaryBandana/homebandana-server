@@ -42,7 +42,17 @@ impl PhilipsHueIntegration {
     }
 
     async fn discover_bridges(&self, url: &str) -> Result<Vec<PhilipsHueBridge>, PhilipsHueError> {
-        let bridges = reqwest::get(url)
+        let client = Client::builder()
+            .timeout(if cfg!(test) {
+                Duration::from_millis(50)
+            } else {
+                Duration::from_secs(30)
+            })
+            .build()?;
+
+        let bridges = client
+            .get(url)
+            .send()
             .await?
             .error_for_status()?
             .json::<Vec<PhilipsHueBridge>>()
@@ -298,6 +308,27 @@ mod tests {
         mock.assert();
         assert!(result.is_err());
         assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(error) if error.is_decode()));
+    }
+
+    #[tokio::test]
+    async fn test_discover_bridges_timeout_fails() {
+        let server = MockServer::start();
+
+        let mock = server.mock(|when, then| {
+            when.method(GET).path("/");
+            then.status(200).delay(Duration::from_millis(100));
+        });
+
+        let integration = {
+            let uuid = Uuid::new_v4();
+
+            PhilipsHueIntegration::new(uuid)
+        };
+
+        let result = integration.discover_bridges(&server.base_url()).await;
+        mock.assert();
+        assert!(result.is_err());
+        assert!(matches!(result.unwrap_err(), PhilipsHueError::HttpRequestFailed(error) if error.is_timeout()));
     }
 
     #[tokio::test]
