@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Allow dead code warnings until we use the config, to make clippy happy.
+#[allow(dead_code)]
+mod config_store;
 mod entities;
 mod integrations;
 
