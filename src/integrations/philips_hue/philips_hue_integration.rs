@@ -42,6 +42,8 @@ impl PhilipsHueIntegration {
     }
 
     async fn discover_bridges(&self, url: &str) -> Result<Vec<PhilipsHueBridge>, PhilipsHueError> {
+        println!("[PhilipsHue] Trying to discover Hue bridges from '{url}'...");
+
         let client = Client::builder()
             .timeout(if cfg!(test) {
                 Duration::from_millis(50)
@@ -58,6 +60,13 @@ impl PhilipsHueIntegration {
             .json::<Vec<PhilipsHueBridge>>()
             .await?;
 
+        for bridge in &bridges {
+            println!(
+                "[PhilipsHue] Discovered Hue bridge '{}' at '{}:{}'.",
+                bridge.id, bridge.internal_ip_address, bridge.port
+            );
+        }
+
         match bridges.is_empty() {
             true => Err(PhilipsHueError::NoBridgesDiscovered),
             false => Ok(bridges),
@@ -65,6 +74,8 @@ impl PhilipsHueIntegration {
     }
 
     async fn link_bridge(&self, bridge: &PhilipsHueBridge) -> Result<String, PhilipsHueError> {
+        println!("[PhilipsHue] Trying to link Hue bridge '{}'...", bridge.id);
+
         let hue_root_ca_primary = Certificate::from_pem(include_bytes!("certificates/hue_root_ca_primary.pem"))?;
         let hue_root_ca_secondary = Certificate::from_pem(include_bytes!("certificates/hue_root_ca_secondary.pem"))?;
 
@@ -88,7 +99,7 @@ impl PhilipsHueIntegration {
         );
 
         let max_attempts = 30;
-        for _ in 1..=max_attempts {
+        for attempt in 1..=max_attempts {
             let responses = client
                 .post(&url)
                 .json(&json!({
@@ -108,6 +119,9 @@ impl PhilipsHueIntegration {
             if let Some(error) = first_response.error {
                 if error.kind == 101 {
                     // Link button not pressed, wait and retry.
+                    println!(
+                        "[PhilipsHue] Link button not pressed. Please press the link button on your Hue bridge... (Attempt {attempt} of {max_attempts})."
+                    );
 
                     // Don't sleep during tests to speed up test execution.
                     if !cfg!(test) {
@@ -122,6 +136,8 @@ impl PhilipsHueIntegration {
                     error.description, error.kind, error.address
                 )))?;
             } else if let Some(success) = first_response.success {
+                println!("[PhilipsHue] Hue bridge successfully linked.");
+
                 return Ok(success.username);
             } else {
                 Err(PhilipsHueError::UnexpectedResponse(
