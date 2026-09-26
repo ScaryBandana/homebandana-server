@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Only used for unit tests, so allow dead code.
+// Only used for unit tests, so ignore dead code warnings.
 #[allow(dead_code)]
 mod mock;
 mod philips_hue;
 
-// Allow dead code warnings until we use the integration manager, to make clippy happy.
+// Ignore dead code warnings until we use the integration manager, to make clippy happy.
 #[allow(dead_code)]
 mod integration;
 mod integration_error;
-// Allow dead code warnings until we use the integration manager, to make clippy happy.
+// Ignore dead code warnings until we use the integration manager, to make clippy happy.
 #[allow(dead_code)]
 mod integration_manager;
