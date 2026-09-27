@@ -17,20 +17,25 @@ use std::time::Duration;
 use async_trait::async_trait;
 use reqwest::{Certificate, Client};
 use serde_json::json;
-use tokio::time::sleep;
+use tokio::{sync::RwLock, time::sleep};
 use uuid::Uuid;
 
-use crate::integrations::{
-    integration::Integration,
-    integration_error::IntegrationError,
-    philips_hue::{
-        philips_hue_bridge::PhilipsHueBridge, philips_hue_error::PhilipsHueError,
-        v2::philips_hue_v2_bridge_authorization::PhilipsHueV2BridgeAuthorizationResponse,
+use crate::{
+    config_store::ConfigStore,
+    integrations::{
+        integration::Integration,
+        integration_error::IntegrationError,
+        philips_hue::{
+            philips_hue_bridge::PhilipsHueBridge, philips_hue_config::PhilipsHueConfig,
+            philips_hue_error::PhilipsHueError,
+            v2::philips_hue_v2_bridge_authorization::PhilipsHueV2BridgeAuthorizationResponse,
+        },
     },
 };
 
 pub struct PhilipsHueIntegration {
     uuid: Uuid,
+    config: RwLock<ConfigStore<PhilipsHueConfig>>,
 }
 
 impl PhilipsHueIntegration {
@@ -38,6 +43,7 @@ impl PhilipsHueIntegration {
     pub fn new(uuid: Uuid) -> Self {
         Self {
             uuid,
+            config: RwLock::new(ConfigStore::load_or_default(format!("config/integrations/philips_hue/{uuid}/config.json"))),
         }
     }
 
@@ -157,6 +163,46 @@ impl Integration for PhilipsHueIntegration {
     }
 
     async fn start(&self) -> Result<(), IntegrationError> {
+        let (has_bridge, has_username) = {
+            let config = self.config.read().await;
+            (config.get().bridge.is_some(), config.get().username.is_some())
+        };
+
+        if !has_bridge {
+            let url = "https://discovery.meethue.com";
+            let bridges = self.discover_bridges(url).await?;
+
+            // Currently we only support single bridge setups, so we just take the first one and ignore the rest.
+            if let Some(first_bridge) = bridges.into_iter().next() {
+                {
+                    let mut config = self.config.write().await;
+                    config.get_mut().bridge = Some(first_bridge);
+                    config.save()?;
+                }
+            }
+        }
+
+        {
+            if let Some(bridge) = &self.config.read().await.get().bridge {
+                println!(
+                    "[PhilipsHue] Hue bridge: {} ({}:{})",
+                    bridge.id, bridge.internal_ip_address, bridge.port
+                );
+            }
+        }
+
+        if !has_username {
+            let bridge = self.config.read().await.get().bridge.clone();
+            if let Some(bridge) = bridge {
+                let username = self.link_bridge(&bridge).await?;
+                {
+                    let mut config = self.config.write().await;
+                    config.get_mut().username = Some(username);
+                    config.save()?;
+                }
+            }
+        }
+
         Ok(())
     }
 

@@ -14,14 +14,22 @@
 
 use thiserror::Error;
 
-use crate::integrations::{
-    mock::mock_integration_error::MockIntegrationError, philips_hue::philips_hue_error::PhilipsHueError,
+use crate::{
+    config_store::ConfigStoreError,
+    integrations::{
+        mock::mock_integration_error::MockIntegrationError, philips_hue::philips_hue_error::PhilipsHueError,
+    },
 };
 
+// Allow the `Error` suffix for these error variants to improve readability.
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Error)]
 pub enum IntegrationError {
     #[error(transparent)]
     MockIntegrationError(#[from] MockIntegrationError),
     #[error(transparent)]
     PhilipsHueError(#[from] PhilipsHueError),
+
+    #[error(transparent)]
+    ConfigurationError(#[from] ConfigStoreError),
 }

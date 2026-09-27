@@ -14,10 +14,10 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PhilipsHueBridge {
-    pub id: String,
-    #[serde(rename = "internalipaddress")]
-    pub internal_ip_address: String,
-    pub port: u16,
+use crate::integrations::philips_hue::philips_hue_bridge::PhilipsHueBridge;
+
+#[derive(Debug, Deserialize, Serialize, Default)]
+pub struct PhilipsHueConfig {
+    pub bridge: Option<PhilipsHueBridge>,
+    pub username: Option<String>,
 }
